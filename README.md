@@ -71,7 +71,7 @@ Shows alert states including firing and inactive alerts.
 
 Displays grouped alerts routed through Alertmanager.
 
-![Alertmanager](alertmanager-dashboard.png.jpeg)
+![Alertmanager](screenshots/alertmanager-dashboard.png.jpeg)
 
 ---
 
