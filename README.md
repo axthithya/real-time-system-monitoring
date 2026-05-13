@@ -63,7 +63,7 @@ The system continuously monitors CPU usage, memory usage, and CPU temperature, w
 
 Shows alert states including firing and inactive alerts.
 
-![Prometheus Alerts](screenshots/alerts-firing.png)
+![Prometheus Alerts](screenshots/alerts-firing.png.png)
 
 ---
 
@@ -71,7 +71,7 @@ Shows alert states including firing and inactive alerts.
 
 Displays grouped alerts routed through Alertmanager.
 
-![Alertmanager](screenshots/alertmanager-dashboard.jpeg)
+![Alertmanager](screenshots/alertmanager-dashboard.jpeg.png)
 
 ---
 
@@ -79,7 +79,7 @@ Displays grouped alerts routed through Alertmanager.
 
 Real-time CPU and temperature alert notifications sent directly to Telegram.
 
-![Telegram Alerts](screenshots/telegram-alerts.png)
+![Telegram Alerts](screenshots/telegram-alerts.png.png)
 
 ---
 
@@ -87,7 +87,7 @@ Real-time CPU and temperature alert notifications sent directly to Telegram.
 
 Memory usage alerts triggered and delivered through Telegram Bot integration.
 
-![Telegram Alerts 2](screenshots/telegram-alerts2.png)
+![Telegram Alerts 2](screenshots/telegram-alerts2.png.png)
 
 ---
 
