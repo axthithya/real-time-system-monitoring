@@ -1,0 +1,29 @@
+groups:
+  - name: system-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 70
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage Detected"
+          description: "CPU usage is above 70%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 >  80
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage"
+          description: "Memory usage is above 80%"
+
+      - alert: HighCPUTemperature
+        expr: max(node_hwmon_temp_celsius) > 85
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU Temperature"
+          description: "CPU temperature is above 85°C"

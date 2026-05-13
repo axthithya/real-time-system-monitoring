@@ -1,0 +1,25 @@
+route:
+  receiver: 'telegram-notifications'
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+  - name: 'telegram-notifications'
+    telegram_configs:
+      - bot_token: 'YOUR_REAL_BOT_TOKEN'
+        chat_id: YOUR_REAL_CHAT_ID
+        message: |
+          🚨 ALERT 🚨
+
+          {{ range .Alerts }}
+          Alert: {{ .Labels.alertname }}
+          Severity: {{ .Labels.severity }}
+
+          Summary:
+          {{ .Annotations.summary }}
+
+          Description:
+          {{ .Annotations.description }}
+
+          {{ end }}
