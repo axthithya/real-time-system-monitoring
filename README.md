@@ -1,360 +1,278 @@
-# 🚨 Real-Time System Monitoring & Alerting Platform
+# Real-Time System Monitoring and Alerting
 
-A complete real-time Linux monitoring solution built using:
+A Docker Compose based monitoring stack for Linux systems using Prometheus,
+Grafana, Alertmanager, Node Exporter, cAdvisor, and Telegram alerts.
 
-- Prometheus
-- Grafana
-- Alertmanager
-- Node Exporter
-- Docker Compose
-- Telegram Bot Notifications
+The goal is simple: clone the repository, add your credentials in `.env`, run
+Docker Compose, and get monitoring plus alerts without manually editing YAML
+secrets.
 
-The system continuously monitors CPU usage, memory usage, and CPU temperature, while sending instant Telegram alerts whenever thresholds are exceeded.
+## Features
 
----
+- Real-time Linux host metrics with Node Exporter
+- Container metrics with cAdvisor
+- Prometheus scraping and alert rules
+- Alertmanager notifications through Telegram
+- Grafana datasource and Node Exporter Full dashboard provisioned automatically
+- Dockerized setup with persistent Prometheus, Grafana, and Alertmanager data
+- `.env` based local configuration so secrets are not committed
 
-# ✨ Features
+## Services
 
-✅ Real-time Linux system monitoring  
-✅ Grafana visualization dashboards  
-✅ Prometheus metrics collection  
-✅ Telegram alert notifications  
-✅ CPU, RAM, and temperature monitoring  
-✅ Dockerized deployment  
-✅ Alertmanager integration  
-✅ Custom alert rules  
-✅ Beginner-friendly DevOps project  
-
----
-
-# 🛠️ Technologies Used
-
-| Technology | Purpose |
+| Service | URL |
 |---|---|
-| Prometheus | Metrics collection |
-| Grafana | Visualization dashboards |
-| Alertmanager | Alert handling |
-| Node Exporter | Linux system metrics |
-| Docker | Containerization |
-| Docker Compose | Service orchestration |
-| Telegram Bot API | Instant notifications |
+| Grafana | http://localhost:3000 |
+| Prometheus | http://localhost:9090 |
+| Alertmanager | http://localhost:9093 |
+| Node Exporter | http://localhost:9100/metrics |
+| cAdvisor | http://localhost:8080 |
 
----
+## Project Structure
 
-# 📂 Project Structure
-
-```bash
+```text
 .
-├── docker-compose.yml
-├── prometheus.yml
-├── alerts.yml
+├── .env.example
+├── .gitignore
 ├── alertmanager.yml
+├── alerts.yml
+├── docker-compose.yml
+├── grafana/
+│   ├── dashboards/
+│   │   ├── node-exporter-full.json
+│   │   └── system-overview.json
+│   └── provisioning/
+│       ├── dashboards/
+│       │   └── system-monitoring.yml
+│       └── datasources/
+│           └── prometheus.yml
+├── prometheus.yml
 ├── screenshots/
 └── README.md
 ```
 
----
+## Requirements
 
-# 📸 Project Screenshots
+- Docker
+- Docker Compose plugin, using the `docker compose` command
+- A Telegram bot token and chat ID for alert notifications
 
----
+This project is designed for Linux host monitoring. On Docker Desktop for macOS
+or Windows, Node Exporter/cAdvisor may show metrics from the Docker VM instead
+of the physical host.
 
-## 🔹 Prometheus Alerts Dashboard
+## Quick Start
 
-Shows alert states including firing and inactive alerts.
+1. Clone the repository.
 
-![Prometheus Alerts](screenshots/alerts-firing.png.png)
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/real-time-system-monitoring.git
+   cd real-time-system-monitoring
+   ```
 
----
+2. Create your local environment file.
 
-## 🔹 Alertmanager Dashboard
+   ```bash
+   cp .env.example .env
+   ```
 
-Displays grouped alerts routed through Alertmanager.
+3. Edit `.env` and add your values.
 
-![Alertmanager](screenshots/alertmanager-dashboard.png.jpeg)
+   ```env
+   TELEGRAM_BOT_TOKEN=123456789:your-real-token
+   TELEGRAM_CHAT_ID=123456789
+   GRAFANA_ADMIN_USER=admin
+   GRAFANA_ADMIN_PASSWORD=change-this-password
+   ```
 
----
+4. Start the stack.
 
-## 🔹 Telegram Alert Notifications — CPU & Temperature
+   ```bash
+   docker compose up -d
+   ```
 
-Real-time CPU and temperature alert notifications sent directly to Telegram.
+5. Open Grafana.
 
-![Telegram Alerts](screenshots/telegram-alerts.png.png)
+   ```text
+   http://localhost:3000
+   ```
 
----
+   Log in with the Grafana username and password from `.env`. The Prometheus
+   datasource, `Node Exporter Full`, and `System Overview` dashboards are
+   provisioned automatically.
 
-## 🔹 Telegram Alert Notifications — Memory Monitoring
+## Startup Behavior
 
-Memory usage alerts triggered and delivered through Telegram Bot integration.
+The full stack expects Telegram alert credentials to be present in `.env`.
 
-![Telegram Alerts 2](screenshots/telegram-alerts2.png.png)
+- `node-exporter` and `cadvisor` can start without Telegram credentials.
+- `alertmanager` needs `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
+- `prometheus` waits for Alertmanager.
+- `grafana` waits for Prometheus.
 
----
+Because of that, the complete monitoring stack starts only after `.env` has the
+Telegram values. This keeps alerting configured correctly from the first full
+run.
 
-## 🔹 Grafana Monitoring Dashboard
+## Required Credentials
 
-Interactive Grafana dashboard visualizing CPU, memory, network, and disk metrics.
+| Variable | Required | Description |
+|---|---:|---|
+| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token created with `@BotFather` |
+| `TELEGRAM_CHAT_ID` | Yes | Telegram user/group/channel chat ID that should receive alerts |
+| `GRAFANA_ADMIN_USER` | No | Grafana admin username, defaults to `admin` |
+| `GRAFANA_ADMIN_PASSWORD` | No | Grafana admin password, defaults to `admin` if not changed |
 
-![Grafana Dashboard](screenshots/grafana-dashboard.png.jpeg)
+Do not commit `.env`. It is ignored by Git.
 
----
+## Telegram Setup
 
-# ⚙️ Setup Instructions
+1. Open Telegram and search for `@BotFather`.
+2. Run `/newbot` and follow the prompts.
+3. Copy the bot token into `.env` as `TELEGRAM_BOT_TOKEN`.
+4. Send a message to your new bot.
+5. Open this URL in a browser, replacing the token:
 
-## 1️⃣ Clone Repository
+   ```text
+   https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
+   ```
 
-```bash
-git clone https://github.com/YOUR_USERNAME/real-time-system-monitoring.git
+6. Copy the `chat.id` value into `.env` as `TELEGRAM_CHAT_ID`.
 
-cd real-time-system-monitoring
-```
+For Telegram groups, add the bot to the group, send a message in the group, then
+call `getUpdates`. Group chat IDs are often negative numbers.
 
----
+## Alert Rules
 
-## 2️⃣ Install Docker & Docker Compose
+Alert rules are stored in `alerts.yml`.
 
-Ubuntu/Debian:
+| Alert | Trigger |
+|---|---|
+| `HighCPUUsage` | CPU usage above 70 percent for 30 seconds |
+| `HighMemoryUsage` | Memory usage above 80 percent for 30 seconds |
+| `HighCPUTemperature` | CPU temperature above 85C for 30 seconds |
 
-```bash
-sudo apt update
+The temperature alert depends on `node_hwmon_temp_celsius`. Some systems do not
+expose hardware temperature metrics to containers, so that alert may stay
+inactive even when CPU and memory metrics work correctly.
 
-sudo apt install docker.io docker-compose -y
-```
+## Grafana Dashboards
 
----
+Grafana is provisioned automatically from files in `grafana/dashboards`.
 
-## 3️⃣ Start Monitoring Stack
+| Dashboard | Description |
+|---|---|
+| `Node Exporter Full` | Prebuilt Grafana dashboard ID `1860` for detailed host metrics |
+| `System Overview` | Small local dashboard with CPU, memory, temperature, and filesystem panels |
+
+The Prometheus datasource is also provisioned automatically, so users do not
+need to manually add a datasource after running Docker Compose.
+
+## Useful Commands
+
+Start the stack:
 
 ```bash
 docker compose up -d
 ```
 
----
-
-# 🌐 Service URLs
-
-| Service | URL |
-|---|---|
-| Prometheus | http://localhost:9090 |
-| Alertmanager | http://localhost:9093 |
-| Grafana | http://localhost:3000 |
-
----
-
-# 📊 Grafana Dashboard
-
-Import Node Exporter Dashboard:
-
-Dashboard ID:
-
-```text
-1860
-```
-
-Default Login:
-
-```text
-Username: admin
-Password: admin
-```
-
----
-
-# 🤖 Telegram Bot Setup
-
-## Create Telegram Bot
-
-1. Open Telegram
-2. Search for `@BotFather`
-3. Run:
-
-```text
-/newbot
-```
-
-4. Copy your bot token
-
----
-
-## Get Telegram Chat ID
-
-Send a message to your bot.
-
-Then open:
-
-```text
-https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-```
-
-Copy your `chat_id`.
-
----
-
-## Configure alertmanager.yml
-
-```yaml
-bot_token: 'YOUR_BOT_TOKEN'
-chat_id: YOUR_CHAT_ID
-```
-
----
-
-# 🚨 Current Alert Rules
-
-| Alert | Trigger Condition |
-|---|---|
-| High CPU Usage | CPU > 70% |
-| High Memory Usage | RAM > 80% |
-| High CPU Temperature | Temp > 85°C |
-
----
-
-# 🧪 Testing Alerts
-
-## CPU Stress Test
+View running containers:
 
 ```bash
-stress --cpu 8 --timeout 60
+docker compose ps
 ```
 
----
-
-## Memory Stress Test
+View logs:
 
 ```bash
-stress --vm 2 --vm-bytes 2G --timeout 60
+docker compose logs -f
 ```
 
----
+Stop the stack:
 
-# 📲 Example Telegram Alert
-
-```text
-🚨 ALERT 🚨
-
-Alert: HighCPUUsage
-Severity: warning
-
-Summary:
-High CPU Usage Detected
-
-Description:
-CPU usage is above 70%
+```bash
+docker compose down
 ```
 
----
+Stop the stack and remove stored monitoring data:
 
-# 👨‍💻 Who Can Use This?
-
-This project is useful for:
-
-- DevOps Engineers
-- Linux Administrators
-- Cloud Engineers
-- SRE Engineers
-- Students learning monitoring systems
-- Home lab users
-- Raspberry Pi users
-- Small server infrastructure monitoring
-
----
-
-# 💡 Real-World Use Cases
-
-- Server health monitoring
-- Production alerting systems
-- Infrastructure monitoring
-- Cloud VM monitoring
-- Self-hosted monitoring stacks
-- Linux performance monitoring
-- Homelab monitoring
-
----
-
-# 🚀 Future Improvements
-
-- AWS EC2 deployment
-- Kubernetes monitoring
-- Email notifications
-- Slack/Discord integrations
-- Disk usage alerts
-- Uptime monitoring
-- Multi-server monitoring
-
----
-
-# 📚 Learning Outcomes
-
-Through this project, I learned:
-
-- Docker container orchestration
-- Infrastructure monitoring
-- Prometheus alert rules
-- Grafana dashboards
-- Alertmanager configuration
-- Linux metrics collection
-- Telegram API integration
-- YAML configuration
-- DevOps fundamentals
-
----
-
-# 💼 Resume Value
-
-This project demonstrates practical experience in:
-
-- DevOps
-- Docker
-- Linux
-- Monitoring & Alerting
-- Infrastructure Automation
-- Observability
-- System Administration
-
----
-
-# 🔒 Important Security Note
-
-Before pushing to GitHub:
-
-❌ NEVER upload:
-
-- Telegram Bot Token
-- Chat ID
-- API secrets
-
-Replace them with:
-
-```yaml
-bot_token: 'YOUR_BOT_TOKEN'
-chat_id: YOUR_CHAT_ID
+```bash
+docker compose down -v
 ```
 
----
+## Testing Alerts
 
-# ⭐ GitHub Topics
+Install `stress` on the host if needed:
 
-```text
-prometheus
-grafana
-docker
-alertmanager
-node-exporter
-devops
-linux-monitoring
-telegram-bot
-system-monitoring
-observability
+```bash
+sudo apt update
+sudo apt install stress -y
 ```
 
----
+Trigger CPU load:
 
-# 📄 License
+```bash
+stress --cpu 8 --timeout 90
+```
+
+Trigger memory load:
+
+```bash
+stress --vm 2 --vm-bytes 2G --timeout 90
+```
+
+After about 30 seconds above the threshold, Prometheus should mark the alert as
+firing and Alertmanager should send a Telegram message.
+
+## Screenshots
+
+### Prometheus Alerts
+
+![Prometheus Alerts](screenshots/alerts-firing.png.png)
+
+### Alertmanager
+
+![Alertmanager](screenshots/alertmanager-dashboard.png.jpeg)
+
+### Telegram Alerts
+
+![Telegram Alerts](screenshots/telegram-alerts.png.png)
+
+![Telegram Alerts 2](screenshots/telegram-alerts2.png.png)
+
+### Grafana Dashboard
+
+![Grafana Dashboard](screenshots/grafana-dashboard.png.jpeg)
+
+## Troubleshooting
+
+If containers do not start, validate the Compose file:
+
+```bash
+docker compose config
+```
+
+If Telegram alerts do not arrive:
+
+- Confirm `.env` contains a real `TELEGRAM_BOT_TOKEN`.
+- Confirm `TELEGRAM_CHAT_ID` is numeric.
+- Send a message to the bot before calling `getUpdates`.
+- Check Alertmanager logs with `docker compose logs alertmanager`.
+
+If Grafana login does not use your new password, you may already have an
+existing Grafana data volume. Either keep the old password or recreate the stack
+with `docker compose down -v` and then `docker compose up -d`.
+
+If the temperature panel has no data, your host may not expose hardware sensor
+metrics to Node Exporter inside Docker.
+
+## Security Notes
+
+- Keep `.env` private.
+- Rotate the Telegram bot token if it is ever committed or shared.
+- Change `GRAFANA_ADMIN_PASSWORD` before running this on a shared machine.
+- Avoid exposing ports `3000`, `9090`, `9093`, `9100`, or `8080` directly to the
+  public internet without authentication and firewall rules.
+
+## License
 
 MIT License
-
----
-
-# ⭐ Support
-
-If you found this useful, give the repository a star ⭐

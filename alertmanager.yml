@@ -7,12 +7,15 @@ route:
 receivers:
   - name: 'telegram-notifications'
     telegram_configs:
-      - bot_token: 'YOUR_REAL_BOT_TOKEN'
-        chat_id: YOUR_REAL_CHAT_ID
+      - bot_token_file: /run/secrets/telegram_bot_token
+        chat_id_file: /run/secrets/telegram_chat_id
+        send_resolved: true
+        parse_mode: ''
         message: |
-          🚨 ALERT 🚨
+          ALERT
 
           {{ range .Alerts }}
+          Status: {{ .Status }}
           Alert: {{ .Labels.alertname }}
           Severity: {{ .Labels.severity }}
 

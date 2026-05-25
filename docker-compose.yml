@@ -1,31 +1,55 @@
-version: '3'
-
 services:
-
   prometheus:
     image: prom/prometheus
     container_name: prometheus
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - alertmanager
+      - node-exporter
+      - cadvisor
 
   node-exporter:
     image: prom/node-exporter
     container_name: node-exporter
+    restart: unless-stopped
+    pid: host
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
     ports:
       - "9100:9100"
+    volumes:
+      - /:/host:ro,rslave
 
   grafana:
     image: grafana/grafana
     container_name: grafana
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    depends_on:
+      - prometheus
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
@@ -37,7 +61,27 @@ services:
   alertmanager:
     image: prom/alertmanager
     container_name: alertmanager
+    restart: unless-stopped
     ports:
       - "9093:9093"
     volumes:
-      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    secrets:
+      - telegram_bot_token
+      - telegram_chat_id
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--cluster.listen-address="
+
+secrets:
+  telegram_bot_token:
+    environment: TELEGRAM_BOT_TOKEN
+  telegram_chat_id:
+    environment: TELEGRAM_CHAT_ID
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:

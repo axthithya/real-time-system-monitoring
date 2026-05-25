@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: System Monitoring
+    orgId: 1
+    folder: System Monitoring
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/dashboards
